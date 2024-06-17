@@ -224,7 +224,7 @@ class NewCSR(implicit val p: Parameters) extends Module
 
   val legalSret = permitMod.io.out.hasLegalSret
   val legalMret = permitMod.io.out.hasLegalMret
-  val isDret = io.dret // Todo: check permission
+  val legalDret = permitMod.io.out.hasLegalDret
 
   var csrRwMap: SeqMap[Int, (CSRAddrWriteBundle[_], UInt)] =
     machineLevelCSRMap ++
@@ -341,6 +341,7 @@ class NewCSR(implicit val p: Parameters) extends Module
 
   permitMod.io.in.mret := io.mret
   permitMod.io.in.sret := io.sret
+  permitMod.io.in.dret := io.dret
   permitMod.io.in.csrIsCustom := customCSRMods.map(_.addr.U === addr).reduce(_ || _).orR
 
   permitMod.io.in.status.tsr := mstatus.regOut.TSR.asBool
@@ -618,7 +619,7 @@ class NewCSR(implicit val p: Parameters) extends Module
       in.vsepc := vsepc.regOut
   }
 
-  dretEvent.valid := isDret
+  dretEvent.valid := legalDret
   dretEvent.in match {
     case in =>
       in.dcsr := dcsr.regOut
