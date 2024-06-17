@@ -249,13 +249,9 @@ class CSR(cfg: FuConfig)(implicit p: Parameters) extends FuncUnit(cfg)
 
   // Todo: this bundle should be used in decode.
   // Todo: check permission in decode stage, pass tvm and vtvm only
-  csrOut.disableSfence := Mux(
-    csrMod.io.out.tvm,
-    csrMod.io.out.privState < PrivState.ModeM,
-    csrMod.io.out.privState.PRVM < PrivMode.S
-  )
-  csrOut.disableHfencev := DontCare // Todo
-  csrOut.disableHfenceg := DontCare // Todo
+  csrOut.disableSfence  := csrMod.io.toDecode.illegalInst.sfenceVMA  || csrMod.io.toDecode.virtualInst.sfenceVMA
+  csrOut.disableHfenceg := csrMod.io.toDecode.illegalInst.hfenceGVMA || csrMod.io.toDecode.virtualInst.hfence
+  csrOut.disableHfencev := csrMod.io.toDecode.illegalInst.hfenceVVMA || csrMod.io.toDecode.virtualInst.hfence
 
   csrOut.customCtrl match {
     case custom =>
